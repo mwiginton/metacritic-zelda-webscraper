@@ -1,0 +1,25 @@
+{
+  "name": "metacritic-zelda-webscraper",
+  "version": "1.0.0",
+  "description": "A puppeteer web scraper which extracts key info for Legend of Zelda games and writes to a csv file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mwiginton/metacritic-zelda-webscraper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fast-csv": "^4.3.6",
+    "fs": "^0.0.1-security",
+    "pupeteer": "^0.0.1",
+    "puppeteer": "^14.1.1"
+  },
+  "bugs": {
+    "url": "https://github.com/mwiginton/metacritic-zelda-webscraper/issues"
+  },
+  "homepage": "https://github.com/mwiginton/metacritic-zelda-webscraper#readme"
+}
