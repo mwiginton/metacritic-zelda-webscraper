@@ -7,42 +7,46 @@ async function scrapeMetacritic() {
     const page = await browser.newPage();
     let listPageData = []
 
-    await page.goto('https://www.metacritic.com/search/game/the%20legend%20of%20zelda/results');
+    await page.goto('https://www.metacritic.com/search/game/the%20legend%20of%20zelda/results', {waitUntil: "load"});
+    // await page.goto('https://www.metacritic.com/search/game/the%20legend%20of%20zelda/results?page=5', {waitUntil: "load"});
+    
     page.on('console', msg => console.log(msg.text()));
 
-    listPageData = await page.evaluate(() => {
-        let results = []
+    // selector when next button enabled
+    // #main_content > div > div.module.search_results.fxdcol.gu6 > div > div > span.flipper.next > a > span
 
-        // the items collection will contain all thread elements
-        let items = document.querySelectorAll('.search_results.module li')
-        items.forEach((item) => {
-            // the paging elements are also list items so we want to make sure we only include game results. 
-            // These have a unique class name of .result which we can check by
-            if (item.className.includes('result')) {
-                let title = item.querySelector('.product_title.basic_stat').innerText;
-                let metacriticScore = item.querySelector('.metascore_w').innerText;
+    // selector when next button disabled
+    // #main_content > div > div.module.search_results.fxdcol.gu6 > div > div > span.flipper.next > span > span
 
-                // click on the title hyperlink to go to the details page
-                // await item.querySelector('.product_title.basic_stat a').click();
-                let baseUrl = `https://www.metacritic.com`;
-                const url = item.querySelector('.product_title.basic_stat a');
-                let fullUrl = baseUrl + url.getAttribute('href');
-      
-                results.push({    
-                    title: title,
-                    metacriticScore: metacriticScore,
-                    pageUrl: fullUrl
-                })
-            }    
+    // find the html element for the next button
+    let nextButtonElement = await page.$('span.flipper.next > a > span');
+    let nextButtonVisible = await page.$('span.flipper.next > a > span') !== null;
+    console.log('next button element');
+    console.log(nextButtonElement);
+
+    console.log('next button visible');
+    console.log(nextButtonVisible)
+
+    let isNextButtonPresent = true;
+
+
+    const gameResults = await page.$$('.search_results.module > .result');
+
+    for(const gameResult of gameResults) {
+        const title = await page.evaluate(el => el.querySelector('.product_title.basic_stat > a').textContent, gameResult);
+        const metacriticScore = await page.evaluate(el => el.querySelector('.metascore_w').textContent, gameResult);
+        const url = await page.evaluate(el => el.querySelector('.product_title.basic_stat a[href]').href, gameResult);
+
+        listPageData.push({
+            title: title.trim(),
+            metacriticScore: metacriticScore.trim(),
+            pageUrl: url.trim()
         })
-        return results
-    });
-    console.log(listPageData)
+    }
 
     // let's try to figure out how to add unique elements from the details page to our existing list of JSON object created (listpageData)
     // couldn't figure out a good way to navigate to detail pages in the forEach loop but was able to do so in this snippet.
     for(entry of listPageData) {
-        let finalResults = [];
         console.log('try to go to new url here');
         let url = entry.pageUrl
         await page.evaluate((url)=>{window.location = url}, url);
